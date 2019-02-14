@@ -16,6 +16,6 @@ class MainViewModel {
     fun refresh() {
         isLoading.set(true)
 
-        dataModel.retrieveData(object : DataModel.DataModelCallBack)
+        //dataModel.retrieveData(object : DataModel.DataModelCallBack)
     }
 }
