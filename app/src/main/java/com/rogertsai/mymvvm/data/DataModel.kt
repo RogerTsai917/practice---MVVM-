@@ -1,4 +1,4 @@
-package com.rogertsai.mymvvm.model
+package com.rogertsai.mymvvm.data
 
 import android.os.Handler
 
