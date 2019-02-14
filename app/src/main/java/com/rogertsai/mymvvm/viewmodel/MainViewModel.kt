@@ -16,6 +16,15 @@ class MainViewModel {
     fun refresh() {
         isLoading.set(true)
 
-        //dataModel.retrieveData(object : DataModel.DataModelCallBack)
+        dataModel.retrieveData(object : DataModel.DataModelInterface {
+            override fun onSuccess(str: String) {
+
+            }
+
+            override fun onFail(str: String) {
+            }
+
+        })
+
     }
 }

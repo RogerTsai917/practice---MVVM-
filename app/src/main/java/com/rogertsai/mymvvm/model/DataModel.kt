@@ -5,19 +5,18 @@ import android.os.Handler
 class DataModel {
     private var count = 0
 
-    // TODO : 了解 Kotlin 的 callback 方式
-    fun retrieveData(callback: DataModelCallBack) {
+    fun retrieveData(dataModelInterface: DataModelInterface) {
         Handler().postDelayed({
-            if (count%2 == 0) {
-                callback.onSuccess("onSuccess New Data $count")
+            if (count % 2 == 0) {
+                dataModelInterface.onSuccess("onSuccess New Data $count")
             } else {
-                callback.onFail("onFail New Data $count")
+                dataModelInterface.onFail("onFail New Data $count")
             }
             count++
-        }, 1500)
+        }, 1000)
     }
 
-    public interface DataModelCallBack {
+    interface DataModelInterface {
         fun onSuccess(str: String)
         fun onFail(str: String)
     }
