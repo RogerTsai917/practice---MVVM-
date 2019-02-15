@@ -59,8 +59,8 @@ class RepoFragment : Fragment() {
 
         /* 不再用new而是改成透過ViewModelProviders協助我們取得ViewModel，
           其中of()的參數代表著ViewModel的生命範圍(scope)，
-          在MainActivity中用of(this)表示ViewModel的生命週期會持續到MainActivity不再活動(destroy且沒有re-create)為止，
-          只要MainActivity還在活動中，ViewModel就不會被清除，每次create都可以取得同一個ViewModel。 */
+          在Activity中用of(this)表示ViewModel的生命週期會持續到Activity不再活動(destroy且沒有re-create)為止，
+          只要Activity還在活動中，ViewModel就不會被清除，每次create都可以取得同一個ViewModel。 */
         mViewModel = ViewModelProviders.of(this, factory).get(RepoViewModel::class.java)
         mBinding.viewModel = mViewModel
 
