@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 data class RepoSearchResponse(
         @SerializedName("total_count")val total_count: Int,
-        @SerializedName("items")val items: List<Repo>
+        @SerializedName("items")val items: MutableList<Repo>
         )

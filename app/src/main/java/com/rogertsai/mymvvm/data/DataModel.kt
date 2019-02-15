@@ -1,23 +1,32 @@
 package com.rogertsai.mymvvm.data
 
-import android.os.Handler
+import com.rogertsai.mymvvm.api.GithubService
+import com.rogertsai.mymvvm.api.RetrofitManager
+import com.rogertsai.mymvvm.data.model.Repo
+import com.rogertsai.mymvvm.data.model.RepoSearchResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class DataModel {
-    private var count = 0
 
-    fun retrieveData(dataModelInterface: DataModelInterface) {
-        Handler().postDelayed({
-            if (count % 2 == 0) {
-                dataModelInterface.onSuccess("onSuccess New Data $count")
-            } else {
-                dataModelInterface.onFail("onFail New Data $count")
-            }
-            count++
-        }, 1000)
+    private val githubService: GithubService = RetrofitManager().getAPI()
+
+    fun searchRepo(query: String, callback: OnDataReadyCallback) {
+        githubService.searchRepos(query)
+                .enqueue(object : Callback<RepoSearchResponse> {
+                    override fun onResponse(call: Call<RepoSearchResponse>, response: Response<RepoSearchResponse>) {
+                        callback.onDataReady(response.body()!!.items)
+                    }
+
+                    override fun onFailure(call: Call<RepoSearchResponse>, t: Throwable) {
+
+                    }
+                })
     }
 
-    interface DataModelInterface {
-        fun onSuccess(str: String)
-        fun onFail(str: String)
+
+    interface OnDataReadyCallback {
+        fun onDataReady(data: MutableList<Repo>)
     }
 }
