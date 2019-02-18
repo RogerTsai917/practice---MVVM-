@@ -1,32 +1,38 @@
 package com.rogertsai.mymvvm.ui
 
+import android.arch.core.util.Function
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import android.databinding.ObservableBoolean
+import android.text.TextUtils
 import com.rogertsai.mymvvm.data.DataModel
 import com.rogertsai.mymvvm.data.model.Repo
+import com.rogertsai.mymvvm.utils.AbsentLiveData
 
-class RepoViewModel constructor(private var dataModel: DataModel) : ViewModel() {
+class RepoViewModel(private val dataModel: DataModel) : ViewModel() {
 
-    var isLoading = ObservableBoolean(false)
-    var repos = MutableLiveData<MutableList<Repo>>()
+    val isLoading = ObservableBoolean(false)
 
-    fun getRepos(): LiveData<MutableList<Repo>> {
+    private val query = MutableLiveData<String>()
+
+    private val repos=
+            Transformations.switchMap(query, object : Function<String, LiveData<MutableList<Repo>>> {
+                override fun apply(userInput: String?): LiveData<MutableList<Repo>> {
+                    return if (TextUtils.isEmpty(userInput)) {
+                        AbsentLiveData.create()
+                    } else {
+                        dataModel.searchRepo(userInput!!)
+                    }
+                }
+            })
+
+    fun getRepos(): LiveData<MutableList<Repo>>? {
         return repos
     }
 
-    fun searchRepo(query: String) {
-        isLoading.set(true)
-
-        dataModel.searchRepo(query, object : DataModel.OnDataReadyCallback {
-            override fun onDataReady(data: MutableList<Repo>) {
-                repos.value = data
-
-                isLoading.set(false)
-            }
-        })
+    fun searchRepo(userInput: String) {
+        query.value = userInput
     }
-
-
 }

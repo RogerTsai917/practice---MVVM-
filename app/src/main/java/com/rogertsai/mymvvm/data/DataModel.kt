@@ -1,5 +1,6 @@
 package com.rogertsai.mymvvm.data
 
+import android.arch.lifecycle.MutableLiveData
 import com.rogertsai.mymvvm.api.GithubService
 import com.rogertsai.mymvvm.api.RetrofitManager
 import com.rogertsai.mymvvm.data.model.Repo
@@ -12,21 +13,21 @@ class DataModel {
 
     private val githubService: GithubService = RetrofitManager().getAPI()
 
-    fun searchRepo(query: String, callback: OnDataReadyCallback) {
+    fun searchRepo(query: String) : MutableLiveData<MutableList<Repo>> {
+
+        val repo = MutableLiveData<MutableList<Repo>>()
+
         githubService.searchRepos(query)
                 .enqueue(object : Callback<RepoSearchResponse> {
                     override fun onResponse(call: Call<RepoSearchResponse>, response: Response<RepoSearchResponse>) {
-                        callback.onDataReady(response.body()!!.items)
+                        repo.value = response.body()!!.items
                     }
 
                     override fun onFailure(call: Call<RepoSearchResponse>, t: Throwable) {
 
                     }
                 })
+        return repo
     }
 
-
-    interface OnDataReadyCallback {
-        fun onDataReady(data: MutableList<Repo>)
-    }
 }

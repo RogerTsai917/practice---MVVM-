@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
-import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -26,17 +25,17 @@ class RepoFragment : Fragment() {
         }
     }
 
-    private lateinit var mBinding: RepoFragmentBinding
-    private lateinit var mViewModel: RepoViewModel
+    private lateinit var binding: RepoFragmentBinding
+    private lateinit var viewModel: RepoViewModel
 
     private var factory = GithubViewModelFactory()
     private var repoAdapter = RepoAdapter(ArrayList())
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mBinding = RepoFragmentBinding.inflate(inflater, container, false)
+        binding = RepoFragmentBinding.inflate(inflater, container, false)
 
-        mBinding.edtQuery.setOnKeyListener(object : View.OnKeyListener {
+        binding.edtQuery.setOnKeyListener(object : View.OnKeyListener {
             override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
                 if ((event!!.action == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     doSearch()
@@ -46,12 +45,12 @@ class RepoFragment : Fragment() {
             }
         })
 
-        mBinding.btnSearch.setOnClickListener { doSearch() }
+        binding.btnSearch.setOnClickListener { doSearch() }
 
-        mBinding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        mBinding.recyclerView.adapter = repoAdapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.adapter = repoAdapter
 
-        return mBinding.root
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -61,25 +60,23 @@ class RepoFragment : Fragment() {
           其中of()的參數代表著ViewModel的生命範圍(scope)，
           在Activity中用of(this)表示ViewModel的生命週期會持續到Activity不再活動(destroy且沒有re-create)為止，
           只要Activity還在活動中，ViewModel就不會被清除，每次create都可以取得同一個ViewModel。 */
-        mViewModel = ViewModelProviders.of(this, factory).get(RepoViewModel::class.java)
-        mBinding.viewModel = mViewModel
+        viewModel = ViewModelProviders.of(this, factory).get(RepoViewModel::class.java)
+        binding.viewModel = viewModel
 
         //使用observe(owner, Observer)來接收callback，owner用this表示LiveData會遵照MainActivity的生命週期判斷是否發送變更。
-        mViewModel.getRepos().observe(this, Observer<MutableList<Repo>> { repos ->
-            repoAdapter.swapItems(repos!!)
+        viewModel.getRepos()?.observe(this, Observer<MutableList<Repo>> { repos ->
+            repoAdapter.swapItems(repos)
+            viewModel.isLoading.set(false)
         })
 
 
     }
 
     private fun doSearch() {
-        val query = mBinding.edtQuery.text.toString()
+        val query = binding.edtQuery.text.toString()
 
-        if (TextUtils.isEmpty(query)) {
-            repoAdapter.clearItems()
-            return
-        }
-        mViewModel.searchRepo(query)
+        viewModel.searchRepo(query)
+        viewModel.isLoading.set(true)
         dismissKeyboard()
     }
 
