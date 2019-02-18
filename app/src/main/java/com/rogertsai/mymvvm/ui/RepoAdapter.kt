@@ -9,44 +9,52 @@ import com.bumptech.glide.Glide
 import android.support.v7.util.DiffUtil
 import java.util.*
 
+class RepoAdapter(private var items: MutableList<Repo>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-class RepoAdapter(private var items: MutableList<Repo>) : RecyclerView.Adapter<RepoAdapter.RepoViewHolder>() {
+    inner class RepoViewHolder(internal val binding: RepoItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(repo: Repo) {
+            binding.repo = repo
+            binding.executePendingBindings()
+            //需特別注意的是bind(repo)當中的executePendingBindings()，這會讓binding立即更新畫面，
+            //所以每次onBindViewHolder後都會立刻更新，以免快速滑動等情況導致UI顯示錯誤。
+        }
+    }
 
-    inner class RepoViewHolder(internal val binding: RepoItemBinding) : RecyclerView.ViewHolder(binding.root)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepoViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = RepoItemBinding.inflate(layoutInflater, parent, false)
         return RepoViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: RepoViewHolder, position: Int) {
-        val repo = items[position]
-
-        Glide.with(holder.itemView.context)
-                .load(repo.owner.avatar_url)
-                .into(holder.binding.ownerAvatar)
-
-        holder.binding.name.text = repo.name
-        holder.binding.desc.text = repo.description
-        holder.binding.stars.text = repo.stars.toString()
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is RepoViewHolder) {
+            bindRepoViewHolder(holder, position)
+        }
     }
 
     override fun getItemCount(): Int {
         return items.size
     }
 
-    fun clearItems() {
-        val size = items.size
-        items.clear()
-        notifyItemRangeRemoved(0, size)
+    fun swapItems(newItems: List<Repo>?) {
+        if (newItems == null) {
+            val oldSize = items.size
+            items.clear()
+            notifyItemRangeChanged(0, oldSize)
+        } else {
+            val result = DiffUtil.calculateDiff(RepoDiffCallback(this.items, newItems))
+            this.items.clear()
+            this.items.addAll(newItems)
+            result.dispatchUpdatesTo(this)
+        }
     }
 
-    fun swapItems(newItems: List<Repo>) {
-        val result = DiffUtil.calculateDiff(RepoDiffCallback(this.items, newItems))
-        this.items.clear()
-        this.items.addAll(newItems)
-        result.dispatchUpdatesTo(this)
+    private fun bindRepoViewHolder(holder: RepoViewHolder, position: Int) {
+        val repo = items[position]
+        holder.bind(repo)
+        Glide.with(holder.binding.root.context)
+                .load(repo.owner.avatarUrl)
+                .into(holder.binding.ownerAvatar)
     }
 
 
