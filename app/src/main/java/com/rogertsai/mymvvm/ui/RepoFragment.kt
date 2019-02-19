@@ -11,7 +11,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import com.rogertsai.mymvvm.data.model.Repo
+import android.widget.Toast
+import com.rogertsai.mymvvm.api.ApiResponse
+import com.rogertsai.mymvvm.data.model.RepoSearchResponse
 import com.rogertsai.mymvvm.databinding.RepoFragmentBinding
 import com.rogertsai.mymvvm.viewmodel.GithubViewModelFactory
 
@@ -64,9 +66,19 @@ class RepoFragment : Fragment() {
         binding.viewModel = viewModel
 
         //使用observe(owner, Observer)來接收callback，owner用this表示LiveData會遵照MainActivity的生命週期判斷是否發送變更。
-        viewModel.getRepos()?.observe(this, Observer<MutableList<Repo>> { repos ->
-            repoAdapter.swapItems(repos)
+        viewModel.getRepos().observe(this, Observer<ApiResponse<RepoSearchResponse>> { response ->
             viewModel.isLoading.set(false)
+
+            if (response == null) {
+                repoAdapter.swapItems(null)
+                return@Observer
+            }
+
+            if (response.isSuccessful()) {
+                repoAdapter.swapItems(response.body?.items)
+            } else {
+                Toast.makeText(context, "連線發生錯誤", Toast.LENGTH_SHORT).show()
+            }
         })
 
 
